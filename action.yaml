@@ -1,4 +1,4 @@
-name: cloud function trigger
+name: container deploy trigger
 
 inputs:
   repository:
@@ -40,8 +40,10 @@ runs:
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
+    
 
     - name: Docker configuration
+      shell: sh
       run: |-
         echo ${{steps.auth.outputs.access_token}} | docker login -u oauth2accesstoken --password-stdin https://${{ inputs.gar_region }}-docker.pkg.dev
       
@@ -50,5 +52,20 @@ runs:
       with:
         cluster_name: ${{ inputs.gke_cluster }}
         location: ${{ inputs.gke_zone }}
+    # Build the Docker image
+    - name: Build app image
+      shell: sh
+      run: |-
+        docker build \
+          --tag "${{ inputs.gar_region }}-docker.pkg.dev/${{ inputs.projectid }}/${{ inputs.container_repository }}/${{ inputs.image_name }}:$GITHUB_SHA" \
+          --build-arg GITHUB_SHA="$GITHUB_SHA" \
+          --build-arg GITHUB_REF="$GITHUB_REF" \
+          ./containers/${{ inputs.job_folder_location }}
+    # Push the Docker image to Google Artifact Registry
+    - name: Publish app image
+      shell: sh
+      run: |-
+        docker push "${{ inputs.gar_region }}-docker.pkg.dev/${{ inputs.projectid }}/${{ inputs.container_repository }}/${{ inputs.image_name }}:$GITHUB_SHA"
+    
     
     
