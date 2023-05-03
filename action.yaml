@@ -35,8 +35,8 @@ runs:
       uses: 'google-github-actions/auth@v0'
       with:
         token_format: 'access_token'
-        workload_identity_provider: ${{ inputs.workload_identity_provider }}
-        service_account: ${{ inputs.service_account }}
+        workload_identity_provider: 'projects/485847302094/locations/global/workloadIdentityPools/githubpool/providers/githubprovider'
+        service_account: 'githubsa@ss-host-p-ac91.iam.gserviceaccount.com'
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
